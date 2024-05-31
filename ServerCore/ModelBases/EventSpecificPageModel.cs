@@ -43,6 +43,22 @@ namespace ServerCore.ModelBases
             }
 
             LoggedInUser = await PuzzleUser.GetPuzzleUserForCurrentUser(_context, User, userManager);
+            if (Event == null)
+            {
+                context.Result = NotFound();
+                return;
+            }
+
+            // Check permissions now that the role has been binded
+            bool isAdmin = await IsEventAdmin();
+            bool isAuthor = await IsEventAuthor();
+            if (((EventRole == EventRole.admin) && !isAdmin) ||
+                ((EventRole == EventRole.author) && !isAuthor) ||
+                ((EventRole != EventRole.admin) && (EventRole != EventRole.author) && (EventRole != EventRole.play)))
+            {
+                context.Result = Forbid();
+                return;
+            }
 
             // Required to have the rest of page execution occur
             await next.Invoke();
@@ -139,7 +155,8 @@ namespace ServerCore.ModelBases
         /// </summary>
         public async Task<bool> HasSwag()
         {
-            return Event.HasSwag && await _context.PlayerInEvent.Where(m => m.Event == Event && m.Player == LoggedInUser).AnyAsync();
+            PlayerInEvent playerSwag = await _context.PlayerInEvent.Where(m => m.Event == Event && m.Player == LoggedInUser).FirstOrDefaultAsync();
+            return (playerSwag != null) && !string.IsNullOrWhiteSpace(playerSwag.Lunch);
         }
 
         /// <summary>
@@ -239,7 +256,6 @@ namespace ServerCore.ModelBases
                 {
                     eventRoleAsString = ModelBases.EventRole.play.ToString();
                 }
-                // TODO: Add auth check to make sure the user has permissions for the given eventRole
                 eventRoleAsString = eventRoleAsString.ToLower();
 
                 if (Enum.IsDefined(typeof(EventRole), eventRoleAsString))

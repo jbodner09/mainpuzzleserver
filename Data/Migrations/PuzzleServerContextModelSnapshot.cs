@@ -370,6 +370,12 @@ namespace Data.Migrations
                     b.Property<double>("LockoutIncorrectGuessPeriod")
                         .HasColumnType("float");
 
+                    b.Property<string>("LunchDescription")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LunchOptions")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("LunchReportDate")
                         .HasColumnType("datetime2");
 
@@ -1246,6 +1252,12 @@ namespace Data.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+
+                    b.Property<bool>("AutoApproveTeammates")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("AutoTeamType")
+                        .HasColumnType("int");
 
                     b.Property<string>("Bio")
                         .HasColumnType("nvarchar(max)");

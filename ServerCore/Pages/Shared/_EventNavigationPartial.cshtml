@@ -15,6 +15,8 @@
         playerEventId = await eventPage.GetPlayerEventId();
         userId = eventPage.LoggedInUser?.ID;
     }
+
+    string teamSignupUrl = "/Teams/Signup";
 }
 
 <!--ADMIN NAV BAR-->
@@ -187,14 +189,14 @@
                         }
                         @if (Event.IsTeamMembershipChangeActive)
                         {
-                            <li class="nav-item"><a style="color:yellow" asp-page="/Teams/List"> Join or Create a Team!</a></li>
+                            <li class="nav-item"><a style="color:yellow" asp-page="@(teamSignupUrl)"> Join or Create a Team!</a></li>
                         }
                     }
                     else
                     {
                         <li class="nav-item"><a asp-page="/Puzzles/Play">Puzzles</a></li>
                     }
-                    @if (Event.HasSwag)
+                    @if (Event.HasSwag && Event.HasIndividualLunch)
                     {
                         if (DateTime.UtcNow > Event.TeamMiscDataChangeEnd || await Model.HasSwag())
                         {
@@ -205,6 +207,17 @@
                             <li class="nav-item"><a style="color:yellow" asp-page="/Swag/Register" title="Lunch">Pick Lunch by @(Event.TeamMiscDataChangeEnd.ToString("M/dd"))!</a></li>
                         }
                     }
+                    else if (Event.EventHasTeamSwag && isOnTeam)
+                    {
+                        if (!Event.CanChangeLunch)
+                        {
+                            <li class="nav-item"><a asp-page="/Teams/Details" asp-route-teamId="@teamId" title="Lunch">Lunch</a></li>
+                        }
+                        else
+                        {
+                            <li class="nav-item"><a style="color:yellow" asp-page="/Teams/Details" asp-route-teamId="@teamId" title="Lunch">Pick Lunch by @(Event.LunchReportDate.ToString("M/dd"))!</a></li>
+                        }
+                    }
                     <li class="nav-item">
                         <div class="dropdown">
                             <a class="dropdown-toggle" data-bs-toggle="dropdown" role="button" href="#">
@@ -213,7 +226,7 @@
                             <ul class="dropdown-menu player-menu">
                                 @if (!isOnTeam)
                                 {
-                                    <li><a class="dropdown-item" asp-page="/Teams/List"> Join or Create a Team!</a></li>
+                                    <li><a class="dropdown-item" asp-page="@(teamSignupUrl)"> Join or Create a Team!</a></li>
                                 }
                                 else
                                 {
